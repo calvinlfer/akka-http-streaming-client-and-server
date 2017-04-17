@@ -79,7 +79,7 @@ class StreamsController extends Controller {
 }
 ```
 
-Writing an equivalent client in Node.JS looks like this (provided you use the `request` package):
+Writing an equivalent client in Node.JS looks like this (provided you use the [`request` package](https://github.com/request/request)):
 ```ecmascript 6
 const fs = require('fs');
 const request = require('request');
