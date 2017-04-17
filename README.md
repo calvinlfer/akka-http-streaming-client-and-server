@@ -78,3 +78,23 @@ class StreamsController extends Controller {
   }
 }
 ```
+
+Writing an equivalent client in Node.JS looks like this (provided you use the `request` package):
+```ecmascript 6
+const fs = require('fs');
+const request = require('request');
+
+fs.createReadStream('example.txt')
+    .pipe(request.post('http://localhost:9000/batch'))
+    .pipe(process.stdout);
+```
+
+And if you want to write to a file (`output.txt`)
+```ecmascript 6
+const fs = require('fs');
+const request = require('request');
+
+fs.createReadStream('example.txt')
+    .pipe(request.post('http://localhost:9000/batch'))
+    .pipe(fs.createWriteStream('output.txt'));
+```
