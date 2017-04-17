@@ -26,7 +26,7 @@ object ExampleClient extends App {
     response.entity.dataBytes
       .via(Framing.delimiter(ByteString("\n"), maximumFrameLength = 256))
       .map(_.utf8String.trim)
-      .throttle(5, 1.second, 5, ThrottleMode.Shaping)
+//      .throttle(5, 1.second, 5, ThrottleMode.Shaping)
       .runForeach(println)
       .foreach(_ => system.terminate())
   )
