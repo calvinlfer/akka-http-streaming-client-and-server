@@ -49,3 +49,32 @@ Please note that you should check the status of the response before attempting t
 
 Ensure you use large enough frame-lengths when parsing data otherwise you end up with scenarios where the data won't
 stream correctly.
+
+
+If you are wondering how to attempt the same style of streaming endpoint with Play Framework, it looks like this:
+```scala
+import akka.stream.scaladsl.{Flow, Framing}
+import akka.util.ByteString
+import play.api.libs.streams.Accumulator
+import play.api.mvc._
+
+class StreamsController extends Controller {
+  private def streamParser = BodyParser { _ =>
+    def logFlow[A]: Flow[A, A, NotUsed] = Flow[A].map { x =>
+      println(x)
+      x
+    }
+
+    Accumulator.source[ByteString].map(sourceOfByteString =>
+      Right(sourceOfByteString.via(Framing.delimiter(ByteString("\n"), 128)).map(_.utf8String.trim).via(logFlow))
+    )
+  }
+
+ // expose this via the routes
+  def batchConversion = Action(streamParser) { req =>
+    Ok.chunked {
+      req.body.map(each => UUID.nameUUIDFromBytes(each.getBytes).toString + "\n")
+    }
+  }
+}
+```
