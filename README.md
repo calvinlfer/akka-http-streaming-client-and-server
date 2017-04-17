@@ -80,7 +80,7 @@ class StreamsController extends Controller {
 ```
 
 Writing an equivalent client in Node.JS looks like this (provided you use the [`request` package](https://github.com/request/request)):
-```ecmascript 6
+```ecmascript
 const fs = require('fs');
 const request = require('request');
 
@@ -90,7 +90,7 @@ fs.createReadStream('example.txt')
 ```
 
 And if you want to write to a file (`output.txt`)
-```ecmascript 6
+```ecmascript
 const fs = require('fs');
 const request = require('request');
 
