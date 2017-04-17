@@ -13,3 +13,39 @@ input and produces the UUID equivalent of the string as output (`/batch`)
 
 The client shows how to interact with both endpoints. It pulls some example strings from a file and sends them through 
 to the server and prints out the UUIDs.
+
+If you want to store the data in a file, you can do something like: 
+```scala
+import java.nio.file.Paths
+
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpMethods._
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest}
+import akka.stream.scaladsl.{FileIO, Framing, Source}
+import akka.stream.{ActorMaterializer, IOResult, ThrottleMode}
+import akka.util.ByteString
+
+import scala.concurrent.Future
+import scala.concurrent.duration._
+
+  implicit val system = ActorSystem("example")
+  implicit val materializer = ActorMaterializer()
+  implicit val ec = system.dispatcher
+
+  val fileSource: Source[ByteString, Future[IOResult]] = FileIO.fromPath(Paths.get("example.txt"))
+
+  // Read data from file -> API -> output to file
+  val placeOutputInFile = Http().singleRequest(
+    HttpRequest(method = POST, uri = "http://localhost:9999/batch", entity = HttpEntity(ContentTypes.`text/plain(UTF-8)`, fileSource)))
+    .flatMap(response =>
+        response.entity.dataBytes
+          .via(Framing.delimiter(ByteString("\n"), maximumFrameLength = 256))
+          .runWith(FileIO.toPath(Paths.get("output.txt"))))
+    .foreach(_ => println("finished writing data to file"))
+```
+
+Please note that you should check the status of the response before attempting to interact with the body.
+
+Ensure you use large enough frame-lengths when parsing data otherwise you end up with scenarios where the data won't
+stream correctly.
